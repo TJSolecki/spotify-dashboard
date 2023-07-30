@@ -1,8 +1,13 @@
 import { Elysia, t } from "elysia";
+import { staticPlugin } from "@elysiajs/static";
 import { generateRandomString } from "./utils";
 import axios from "axios";
 
 const app = new Elysia();
+app.use(staticPlugin({
+  assets: './dist',
+  prefix: ''
+}));
 
 const PORT = 3000;
 const SPOTIFY_API: string = 'https://api.spotify.com/v1';
@@ -112,6 +117,11 @@ app.get('/login', async (context) => {
       set.status = 500;
       return error;
     }
+  });
+
+  app.get('/', () => {
+    const index = Bun.resolveSync("../dist/index.html", import.meta.dir)
+    return Bun.file(index);
   });
 
   // Start the server
