@@ -18,7 +18,7 @@ const REDIRECT_URI = 'http://localhost:3000/callback';
 
 
 // Route to initiate the authorization process
-app.get('/login', async (context) => {
+app.get('/authenticate', async (context) => {
   const scopes = 'user-top-read user-read-private user-read-email user-library-read playlist-modify-private playlist-modify-public';
   const state = generateRandomString(16);
   const args = new URLSearchParams({
@@ -29,6 +29,13 @@ app.get('/login', async (context) => {
     state: state,
   });
   context.set.redirect = 'https://accounts.spotify.com/authorize?' + args;
+});
+
+app.get('/check-auth', ({store}) => {
+  if (store.access_token) {
+    return { isAuth: true };
+  }
+  return { isAuth: false }
 });
 
   // Callback route to handle the access token request
@@ -59,7 +66,7 @@ app.get('/login', async (context) => {
       }
       store.access_token = access_token;
 
-      set.redirect = '/dashboard'
+      set.redirect = '/'
     } catch (error) {
       console.log(error);
       set.status = 500;
@@ -82,7 +89,8 @@ app.get('/login', async (context) => {
       set.status = 200;
       const tracks = data.items.map( entry => ({
         name: entry.name,
-        artist: entry.artists[0].name
+        artist: entry.artists[0].name,
+        images: entry.album.images,
       }));
       return tracks;
     } catch (error) {
@@ -108,7 +116,8 @@ app.get('/login', async (context) => {
 
       const artists = data.items.map( entry => ({
         name: entry.name,
-        genres: entry.genres
+        genres: entry.genres,
+        images: entry.images,
       }));
 
       set.status = 200;
