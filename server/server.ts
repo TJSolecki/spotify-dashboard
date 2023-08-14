@@ -74,22 +74,22 @@ app.get('/callback', async ({ query, set, store }) => {
     }
 });
 
-app.get('/top/tracks', async({ store, set }) => {
+app.get('/top/tracks/:timeRange', async({ store, set, params }) => {
     try {
+        const timeRange = params.timeRange;
         if (store.access_token === undefined) {
             set.status = 500;
             throw new Error('Please authenticate with spotify');
         }
         let data;
+        const reqUrl = `/me/top/tracks?limit=50&time_range=${timeRange}`;
         try {
-            const response = await makeSpotifyGETRequest('/me/top/tracks', 
-                store.access_token)
+            const response = await makeSpotifyGETRequest(reqUrl, store.access_token);
             data = response.data;
         }
         catch {
             store.access_token = await getRefreshedToken(store.refresh_token);
-            const response = await makeSpotifyGETRequest('/me/top/tracks', 
-                store.access_token)
+            const response = await makeSpotifyGETRequest(reqUrl, store.access_token);
             data = response.data;
         }
         set.status = 200;
@@ -106,23 +106,23 @@ app.get('/top/tracks', async({ store, set }) => {
     }
 });
 
-app.get('/top/artists', async({ store, set }) => {
+app.get('/top/artists/:timeRange', async({ store, set, params }) => {
     try {
+        const timeRange = params.timeRange;
         if (store.access_token === undefined) {
             set.status = 500;
             return 'no token';
         }
 
         let data;
+        const reqUrl = `/me/top/artists?limit=50&time_range=${timeRange}`;
         try {
-            const response = await makeSpotifyGETRequest('/me/top/artists', 
-                store.access_token);
+            const response = await makeSpotifyGETRequest(reqUrl, store.access_token);
             data = response.data;
         }
         catch {
             store.access_token = await getRefreshedToken(store.refresh_token);
-            const response = await makeSpotifyGETRequest('/me/top/artists', 
-                store.access_token);
+            const response = await makeSpotifyGETRequest(reqUrl, store.access_token);
             data = response.data;
         }
 
